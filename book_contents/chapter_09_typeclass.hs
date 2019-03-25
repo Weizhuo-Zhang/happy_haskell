@@ -7,6 +7,8 @@ module Shapes
 , baseRect
 ) where
 
+import qualified Data.Map as Map
+
 -- data Shape = Circle Float Float Float | Rectangle Float Float Float Float deriving (Show)
 
 -- surface :: Shape -> Float
@@ -90,13 +92,13 @@ baseRect width height = Rectangle (Point 0 0) (Point width height)
 
 
 
-data Person = Person { firstName :: String
-                     , lastName :: String
-                     , age :: Int
-                     , height :: Float
-                     , phoneNumber :: String
-                     , flavor :: String
-                     } deriving (Show)
+-- data Person = Person { firstName :: String
+--                      , lastName :: String
+--                      , age :: Int
+--                      , height :: Float
+--                      , phoneNumber :: String
+--                      , flavor :: String
+--                      } deriving (Show)
 
 -- ghci> :t flavor
 -- flavor :: Person -> String
@@ -143,6 +145,186 @@ vectMult :: (Num t) => Vector t -> t -> Vector t
 (Vector i j k) `vectMult` m = Vector (i*m) (j*m) (k*m)
 scalarMult :: (Num t) => Vector t -> Vector t -> t
 (Vector i j k) `scalarMult` (Vector l m n) = i*l + j*m + k*n
+
+-- ghci> Vector 3 5 8 `vplus` Vector 9 2 8
+-- Vector 12 7 16
+-- ghci> Vector 3 5 8 `vplus` Vector 9 2 8 `vplus` Vector 0 2 3
+-- Vector 12 9 19
+-- ghci> Vector 4 9 5 `scal
+-- scalarMult  scaleFloat
+-- ghci> Vector 4 9 5 `scalarMult` Vector 9.0 2.0 4.0
+-- 74.0
+-- ghci> Vector 2 9 3 `vectMult` (Vector 4 9 5 `scalarMult` Vector 9 2 4)
+-- Vector 148 666 222
+
+
+-- Derived instances
+
+-- data Person = Person  { firstName :: String
+--                       , lastName  :: String
+--                       , age       :: Int
+--                       } deriving (Eq)
+
+-- ghci> let mikeD = Person {firstName = "Michael", lastName = "Diamond", age = 43}
+-- ghci> let adRock = Person {firstName = "Adam", lastName = "Horovitz", age = 41}
+-- ghci> let mca = Person {firstName = "Adam", lastName = "Yauch", age = 44}
+-- ghci> mca == adRock
+-- False
+-- ghci> mikeD == adRock
+-- False
+-- ghci> mikeD == mikeD
+-- True
+-- ghci> mikeD == Person {firstName = "Michael", lastName = "Diamond", age = 43}
+-- True
+
+-- ghci> let beastieBoys = [mca, adRock, mikeD]
+-- ghci> mikeD `elem` beastieBoys 
+-- True
+
+data Person = Person { firstName :: String
+                     , lastName  :: String
+                     , age       :: Int
+                     } deriving (Eq, Show, Read)
+
+-- ghci> let mikeD = Person {firstName = "Michael", lastName = "Diamond", age = 43}
+-- ghci> mikeD
+-- Person {firstName = "Michael", lastName = "Diamond", age = 43}
+-- ghci> "mikeD is: " ++ show mikeD
+-- "mikeD is: Person {firstName = \"Michael\", lastName = \"Diamond\", age = 43}"
+
+-- ghci> read "Person {firstName = \"Michael\", lastName = \"Diamond\", age = 43}" :: Person
+-- Person {firstName = "Michael", lastName = "Diamond", age = 43}
+-- ghci> read "Person {firstName = \"Michael\", lastName = \"Diamond\", age = 43}" == mikeD
+-- True
+
+-- data Bool = False | True deriving (Ord)
+-- ghci> True `compare` False
+-- GT
+-- ghci> True > False
+-- True
+-- ghci> True < False
+-- False
+
+data Day = Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday
+           deriving (Eq, Ord, Show, Read, Bounded, Enum)
+
+-- ghci> Wednesday 
+-- Wednesday
+-- ghci> show Wednesday 
+-- "Wednesday"
+-- ghci> read "Saturday" :: Day
+-- Saturday
+
+-- ghci> Saturday == Sunday 
+-- False
+-- ghci> Saturday == Saturday 
+-- True
+-- ghci> Saturday > Friday 
+-- True
+-- ghci> Monday `compare` Wednesday 
+-- LT
+
+-- ghci> minBound :: Day 
+-- Monday
+-- ghci> maxBound :: Day 
+-- Sunday
+
+-- ghci> succ Monday 
+-- Tuesday
+-- ghci> pred Saturday 
+-- Friday
+-- ghci> [Thursday .. Sunday]
+-- [Thursday,Friday,Saturday,Sunday]
+-- ghci> [minBound .. maxBound] :: [Day]
+-- [Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday]
+
+
+-- Type synonyms
+
+-- type PhoneBook = [(String, String)]
+type PhoneNumber = String
+type Name = String
+type PhoneBook = [(Name, PhoneNumber)]
+
+inPhoneBook :: Name -> PhoneNumber -> PhoneBook -> Bool
+inPhoneBook name pnumber pbook = (name, pnumber) `elem` pbook
+
+
+-- data Either a b = Left a | Right b deriving (Eq, Ord, Read, Show)
+
+-- ghci> Shapes.Right 20
+-- Right 20
+-- ghci> Shapes.Left "w00t"
+-- Left "w00t"
+-- ghci> :t Shapes.Right 'a'
+-- Shapes.Right 'a' :: Shapes.Either a Char
+-- ghci> :t Shapes.Left True
+-- Shapes.Left True :: Shapes.Either Bool b
+
+data LockerState = Taken | Free deriving (Show, Eq)
+type Code = String
+type LockerMap = Map.Map Int (LockerState, Code)
+
+lockerLookup :: Int -> LockerMap -> Either String Code
+lockerLookup lockerNumber map =
+    case Map.lookup lockerNumber map of
+         Nothing -> Left $ "Locker number " ++ show lockerNumber ++ " doesn't exist!"
+         Just (state, code) -> if state /= Taken
+                               then Right code
+                               else Left $ "Locker " ++ show lockerNumber ++ " is already taken!"
+
+lockers :: LockerMap
+lockers = Map.fromList
+    [(100, (Taken, "ZD39I"))
+    ,(101, (Free,  "JAH3I"))
+    ,(103, (Free,  "IQSA9"))
+    ,(105, (Free,  "QITSA"))
+    ,(109, (Free,  "893JJ"))
+    ,(110, (Taken, "99292"))
+    ]
+
+-- ghci> lockerLookup 101 lockers
+-- Right "JAH3I"
+-- ghci> lockerLookup 100 lockers
+-- Left "Locker 100 is already taken!"
+-- ghci> lockerLookup 102 lockers
+-- Left "Locker number 102 doesn't exist!"
+
+-- Recursive data structures
+-- data List a = Empty | Cons a (List a) deriving (Show, Read, Eq, Ord)
+-- data List a = Empty | Cons { listHead :: a, listTail :: List a} deriving (Show, Read, Eq, Ord)
+
+-- ghci> Empty
+-- Empty
+-- ghci> 5 `Cons` Empty 
+-- Cons {listHead = 5, listTail = Empty}
+-- ghci> 4 `Cons` (5 `Cons` Empty )
+-- Cons {listHead = 4, listTail = Cons {listHead = 5, listTail = Empty}
+
+infixr 5 :-:
+data List a = Empty | a :-: (List a) deriving (Show, Read, Eq, Ord)
+
+-- ghci> 3 :-: 4 :-: 5 :-: Empty
+-- 3 :-: (4 :-: (5 :-: Empty))
+-- ghci> let a = 3 :-: 4 :-: 5 :-: Empty
+-- ghci> 100 :-: a
+-- 100 :-: (3 :-: (4 :-: (5 :-: Empty)))
+
+-- infixr 5 ++
+-- (++) :: [a] -> [a] -> [a]
+-- []     ++ ys = ys
+-- (x:xs) ++ ys = x : (xs ++ ys)
+
+infixr 5 .++
+(.++) :: List a -> List a -> List a
+Empty .++ ys = ys
+(x :-: xs) .++ ys = x :-: (xs .++ ys)
+
+-- ghci> let a = 3 :-: 4 :-: 5 :-: Empty
+-- ghci> let b = 6 :-: 7 :-: Empty
+-- ghci> a .++ b
+-- 3 :-: (4 :-: (5 :-: (6 :-: (7 :-: Empty))))
+
 
 
 

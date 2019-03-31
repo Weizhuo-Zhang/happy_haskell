@@ -1,0 +1,4 @@
+stack new hello-world simple --resolver=lts-7.8
+
+stack build
+

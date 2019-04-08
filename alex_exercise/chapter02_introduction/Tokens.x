@@ -39,6 +39,7 @@ tokens :-
 
     $white+                             ;
     "--".*                              ;
+    \n                                  ;
     let                                 { \s -> Let }
     in                                  { \s -> In }
     $digit+                             { \s -> Int (read s) }
@@ -78,7 +79,8 @@ data Token =
         Int Int
         deriving (Eq,Show)
 
-main = do
-  s <- getContents
-  print (alexScanTokens s)
+main
+  = do
+      s <- getContents
+      print (alexScanTokens s)
 }

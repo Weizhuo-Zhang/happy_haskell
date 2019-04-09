@@ -1,0 +1,5 @@
+A "comment /* buried */ inside" a string.
+2 "comment /* buried */ inside" a string.
+3 "comment /* buried */ inside" a string.
+4 "comment /* buried */ inside" a string.
+6 "comment /* buried */ inside" a string.
